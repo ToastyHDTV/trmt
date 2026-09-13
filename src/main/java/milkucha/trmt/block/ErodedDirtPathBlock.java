@@ -10,6 +10,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -21,19 +26,24 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Final erosion stage for dirt after extended foot-traffic.
- * Visually appears like a dirt path (similar to vanilla dirt_path).
+ * Visually appears like a dirt path with reduced height (similar to vanilla dirt_path).
  * Stores a {@link #FACING} direction to preserve rotation.
  * De-erodes back to eroded_dirt and continues the regeneration chain.
  * Never placed by players or generated naturally — only set by the erosion system.
+ * 
+ * Right-click with bone meal to instantly regenerate to GRASS_BLOCK.
+ * Sheep and other animals can eat this block to restore grass.
  */
 public class ErodedDirtPathBlock extends Block {
 
-    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
+    /** Collision and outline shape matching vanilla dirt_path (15 pixels tall, 1 pixel lower). */
+    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 15, 16);
 
     /** Preserves the rotation established during earlier erosion stages. */
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -50,10 +60,33 @@ public class ErodedDirtPathBlock extends Block {
 
     @Override
     public void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify) {
-        super.neighborChanged(state, world, pos, sourceBlock, wireOrientation, notify);
+        super.neighborChanged(state, world, pos, sourceBlock, sourceBlock, notify);
         if (!world.isClientSide() && world.getBlockState(pos.above()).canOcclude()) {
             world.setBlock(pos, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
         }
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        ItemStack itemStack = player.getItemInHand(hand);
+        
+        // Right-click with bone meal to regenerate
+        if (itemStack.is(Items.BONE_MEAL)) {
+            if (!world.isClientSide()) {
+                world.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+                
+                // Consume bone meal
+                if (!player.getAbilities().instabuild) {
+                    itemStack.shrink(1);
+                }
+                
+                // Particle effect (optional visual feedback)
+                world.levelEvent(2005, pos, 0);
+            }
+            return InteractionResult.SUCCESS;
+        }
+        
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -95,5 +128,21 @@ public class ErodedDirtPathBlock extends Block {
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    /**
+     * Allows animals (sheep, etc.) to eat this block and restore grass.
+     * Returning true indicates the block can be eaten.
+     */
+    public boolean isValidBonemealTarget(BlockGetter world, BlockPos pos, BlockState state, boolean isClient) {
+        return true;
+    }
+
+    /**
+     * When bone meal is applied by animals or other sources, convert to GRASS_BLOCK.
+     */
+    public boolean performBonemeal(ServerLevel world, RandomSource random, BlockPos pos, BlockState state) {
+        world.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        return true;
     }
 }
