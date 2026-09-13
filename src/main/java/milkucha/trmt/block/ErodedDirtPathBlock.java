@@ -60,7 +60,7 @@ public class ErodedDirtPathBlock extends Block {
 
     @Override
     public void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify) {
-        super.neighborChanged(state, world, pos, sourceBlock, sourceBlock, notify);
+        super.neighborChanged(state, world, pos, sourceBlock, wireOrientation, notify);
         if (!world.isClientSide() && world.getBlockState(pos.above()).canOcclude()) {
             world.setBlock(pos, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
         }
