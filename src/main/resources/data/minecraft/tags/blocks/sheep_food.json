@@ -3,7 +3,7 @@
   "values": [
     "trmt:eroded_grass_block",
     "trmt:eroded_dirt",
-    "trmt:eroded_dirt_path",
-    "trmt:eroded_coarse_dirt"
+    "trmt:eroded_coarse_dirt",
+    "trmt:eroded_dirt_path"
   ]
 }
