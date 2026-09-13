@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=south": { "model": "minecraft:block/dirt_path" },
+    "facing=west":  { "model": "minecraft:block/dirt_path", "y": 90 },
+    "facing=north": { "model": "minecraft:block/dirt_path", "y": 180 },
+    "facing=east":  { "model": "minecraft:block/dirt_path", "y": 270 }
+  }
+}
