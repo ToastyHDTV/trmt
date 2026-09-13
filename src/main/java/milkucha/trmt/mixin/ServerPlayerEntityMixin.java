@@ -4,6 +4,7 @@ import milkucha.trmt.TRMTBlocks;
 import milkucha.trmt.TRMTConfig;
 import milkucha.trmt.TRMTEffects;
 import milkucha.trmt.block.ErodedDirtBlock;
+import milkucha.trmt.block.ErodedDirtPathBlock;
 import milkucha.trmt.block.ErodedGrassBlock;
 import milkucha.trmt.block.ErodedSandBlock;
 import milkucha.trmt.erosion.BlockThresholds;
@@ -82,8 +83,8 @@ public class ServerPlayerEntityMixin {
         Block block = state.getBlock();
 
         // Transformation chain:
-        //   grass_block ──► eroded_grass_block (s0→s4) ──► eroded_dirt (s0→s3) ──► dirt_path (final)
-        //   dirt ────────► eroded_dirt (s1→s3) ──► dirt_path (final)
+        //   grass_block ──► eroded_grass_block (s0→s4) ──► eroded_dirt (s0→s3) ──► eroded_dirt_path (final) ──► eroded_dirt ──► eroded_grass_block ──► grass_block
+        //   dirt ────────► eroded_dirt (s1→s3) ──► eroded_dirt_path (final) ──► [regeneration continues]
         // Apply player erosion multiplier; mounted players get an additional configurable boost.
         float mult = TRMTConfig.get().erosionMultipliers.player
                 * (mounted ? TRMTConfig.get().erosionMultipliers.mounted : 1.0f);
@@ -105,7 +106,7 @@ public class ServerPlayerEntityMixin {
         }
 
         boolean tracked = (erosion.grassEnabled && (state.is(Blocks.GRASS_BLOCK) || state.is(TRMTBlocks.ERODED_GRASS_BLOCK)))
-                || (erosion.dirtEnabled && (state.is(Blocks.DIRT) || state.is(TRMTBlocks.ERODED_DIRT)))
+                || (erosion.dirtEnabled && (state.is(Blocks.DIRT) || state.is(TRMTBlocks.ERODED_DIRT) || state.is(TRMTBlocks.ERODED_DIRT_PATH)))
                 || (erosion.sandEnabled && (state.is(Blocks.SAND) || state.is(TRMTBlocks.ERODED_SAND)))
                 || (erosion.leavesEnabled && BlockThresholds.isLeaves(block));
 
@@ -136,7 +137,7 @@ public class ServerPlayerEntityMixin {
         BlockState adjState = world.getBlockState(pos);
         TRMTConfig.ErosionToggles erosion = TRMTConfig.get().erosion;
         if ((erosion.grassEnabled && (adjState.is(Blocks.GRASS_BLOCK) || adjState.is(TRMTBlocks.ERODED_GRASS_BLOCK)))
-                || (erosion.dirtEnabled && (adjState.is(Blocks.DIRT) || adjState.is(TRMTBlocks.ERODED_DIRT)))
+                || (erosion.dirtEnabled && (adjState.is(Blocks.DIRT) || adjState.is(TRMTBlocks.ERODED_DIRT) || adjState.is(TRMTBlocks.ERODED_DIRT_PATH)))
                 || (erosion.sandEnabled && (adjState.is(Blocks.SAND) || adjState.is(TRMTBlocks.ERODED_SAND)))
                 || (erosion.leavesEnabled && BlockThresholds.isLeaves(adjState.getBlock()))) {
             manager.onStep(pos, adjState.getBlock(), amount, gameTime);
@@ -259,8 +260,10 @@ public class ServerPlayerEntityMixin {
                 manager.removeEntry(pos);
                 return;
             }
-            // Stage 3 reached — convert to dirt_path (final stage).
-            world.setBlock(pos, Blocks.DIRT_PATH.defaultBlockState(), Block.UPDATE_ALL);
+            // Stage 3 reached — convert to eroded_dirt_path (final stage), carrying FACING forward.
+            world.setBlock(pos,
+                    TRMTBlocks.ERODED_DIRT_PATH.defaultBlockState().setValue(ErodedDirtPathBlock.FACING, facing),
+                    Block.UPDATE_ALL);
             manager.removeEntry(pos);
             return;
         }
