@@ -82,8 +82,8 @@ public class ServerPlayerEntityMixin {
         Block block = state.getBlock();
 
         // Transformation chain:
-        //   grass_block ──► eroded_grass_block (s0→s4) ──► eroded_dirt (s0→s3) ──► eroded_coarse_dirt (final)
-        //   dirt ────────► eroded_dirt (s1→s3) ──► eroded_coarse_dirt (final)
+        //   grass_block ──► eroded_grass_block (s0→s4) ──► eroded_dirt (s0→s3) ──► dirt_path (final)
+        //   dirt ────────► eroded_dirt (s1→s3) ──► dirt_path (final)
         // Apply player erosion multiplier; mounted players get an additional configurable boost.
         float mult = TRMTConfig.get().erosionMultipliers.player
                 * (mounted ? TRMTConfig.get().erosionMultipliers.mounted : 1.0f);
@@ -259,10 +259,8 @@ public class ServerPlayerEntityMixin {
                 manager.removeEntry(pos);
                 return;
             }
-            // Stage 3 reached — carry rotation forward to eroded_coarse_dirt.
-            world.setBlock(pos,
-                    TRMTBlocks.ERODED_COARSE_DIRT.defaultBlockState().setValue(ErodedDirtBlock.FACING, facing),
-                    Block.UPDATE_ALL);
+            // Stage 3 reached — convert to dirt_path (final stage).
+            world.setBlock(pos, Blocks.DIRT_PATH.defaultBlockState(), Block.UPDATE_ALL);
             manager.removeEntry(pos);
             return;
         }
