@@ -17,12 +17,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Final erosion stage for dirt after extended foot-traffic.
@@ -98,6 +102,14 @@ public class ErodedDirtPathBlock extends Block {
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    /**
+     * Drops DIRT when broken.
+     */
+    @Override
+    protected List<net.minecraft.world.level.block.Block> getDrops(BlockState state, LootParams.Builder builder) {
+        return Collections.singletonList(Blocks.DIRT);
     }
 
     /**
