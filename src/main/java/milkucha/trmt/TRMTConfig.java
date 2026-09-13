@@ -64,6 +64,7 @@ public final class TRMTConfig {
         public MinMax              grass      = new MinMax(2f, 4f);
         public MinMax              dirt       = new MinMax(8f, 12f);
         public MinMax              coarseDirt = new MinMax(12f, 20f);
+        public MinMax              dirtPath   = new MinMax(16f, 24f);
         public MinMax              sand       = new MinMax(1.5f, 3f);
         public VegetationThreshold leaves     = new VegetationThreshold(2f, 3f, 0.1f);
         public VegetationThreshold vegetation = new VegetationThreshold(2f, 3f, 0.2f);
@@ -79,6 +80,7 @@ public final class TRMTConfig {
 
     public static class DirtDeErosion {
         public float erodedDirt       =  8f;
+        public float erodedDirtPath   = 13f;
         public float erodedCoarseDirt = 13f;
     }
 
@@ -111,7 +113,7 @@ public final class TRMTConfig {
     );
     public DeErosionTimeoutDays deErosionTimeoutDays = new DeErosionTimeoutDays();
 
-    // ── singleton ──────────────────────────────────────────────────────────
+    // ── singleton ─────────────────────────────────────────────────────────[...]
     private static TRMTConfig instance = new TRMTConfig();
 
     private TRMTConfig() {}
