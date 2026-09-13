@@ -9,6 +9,7 @@
 		"MobEntityMixin",
 		"SandBlockMixin",
 		"ServerPlayerEntityMixin",
+		"SheepMixin",
 		"ShovelItemMixin",
 		"SugarCaneBlockMixin"
 	],
