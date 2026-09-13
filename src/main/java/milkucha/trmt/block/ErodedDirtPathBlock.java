@@ -10,11 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -26,7 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -37,7 +31,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * De-erodes back to eroded_dirt and continues the regeneration chain.
  * Never placed by players or generated naturally — only set by the erosion system.
  * 
- * Right-click with bone meal to instantly regenerate to GRASS_BLOCK.
  * Sheep and other animals can eat this block to restore grass.
  */
 public class ErodedDirtPathBlock extends Block {
@@ -64,29 +57,6 @@ public class ErodedDirtPathBlock extends Block {
         if (!world.isClientSide() && world.getBlockState(pos.above()).canOcclude()) {
             world.setBlock(pos, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
         }
-    }
-
-    @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        ItemStack itemStack = player.getItemInHand(hand);
-        
-        // Right-click with bone meal to regenerate
-        if (itemStack.is(Items.BONE_MEAL)) {
-            if (!world.isClientSide()) {
-                world.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-                
-                // Consume bone meal
-                if (!player.getAbilities().instabuild) {
-                    itemStack.shrink(1);
-                }
-                
-                // Particle effect (optional visual feedback)
-                world.levelEvent(2005, pos, 0);
-            }
-            return InteractionResult.SUCCESS;
-        }
-        
-        return InteractionResult.PASS;
     }
 
     @Override
