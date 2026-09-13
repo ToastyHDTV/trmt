@@ -88,6 +88,8 @@ public final class BlockThresholds {
             block = Blocks.DIRT;
         } else if (block == TRMTBlocks.ERODED_COARSE_DIRT) {
             block = Blocks.COARSE_DIRT;
+        } else if (block == TRMTBlocks.ERODED_DIRT_PATH) {
+            block = Blocks.DIRT_PATH;
         } else if (block == TRMTBlocks.ERODED_SAND) {
             block = Blocks.SAND;
         }
@@ -101,6 +103,8 @@ public final class BlockThresholds {
             range = cfg.erosionThresholds.dirt;
         } else if (block == Blocks.COARSE_DIRT) {
             range = cfg.erosionThresholds.coarseDirt;
+        } else if (block == Blocks.DIRT_PATH) {
+            range = cfg.erosionThresholds.dirtPath;
         } else if (block == Blocks.SAND) {
             range = cfg.erosionThresholds.sand;
         } else if (getVegetationSet().contains(block)) {
@@ -135,6 +139,7 @@ public final class BlockThresholds {
                 if (neighborBlock == TRMTBlocks.ERODED_GRASS_BLOCK
                         || neighborBlock == TRMTBlocks.ERODED_DIRT
                         || neighborBlock == TRMTBlocks.ERODED_COARSE_DIRT
+                        || neighborBlock == TRMTBlocks.ERODED_DIRT_PATH
                         || neighborBlock == TRMTBlocks.ERODED_SAND) {
                     return false;
                 }
@@ -181,6 +186,14 @@ public final class BlockThresholds {
         TRMTConfig cfg = TRMTConfig.get();
         TRMTConfig.DirtDeErosion d = cfg.deErosionTimeoutDays.dirt;
         if (block == TRMTBlocks.ERODED_DIRT) return (long)(d.erodedDirt       * TICKS_PER_DAY);
+        if (block == TRMTBlocks.ERODED_DIRT_PATH) return (long)(d.erodedDirtPath * TICKS_PER_DAY);
         return (long)(d.erodedCoarseDirt * TICKS_PER_DAY);
+    }
+
+    /** Returns the de-erosion inactivity timeout (ticks) for the eroded dirt path block. */
+    public static long getDirtPathDeErosionTimeout() {
+        TRMTConfig cfg = TRMTConfig.get();
+        TRMTConfig.DirtDeErosion d = cfg.deErosionTimeoutDays.dirt;
+        return (long)(d.erodedDirtPath * TICKS_PER_DAY);
     }
 }
