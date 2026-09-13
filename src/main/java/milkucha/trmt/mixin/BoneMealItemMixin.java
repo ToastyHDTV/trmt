@@ -2,6 +2,7 @@ package milkucha.trmt.mixin;
 
 import milkucha.trmt.TRMTBlocks;
 import milkucha.trmt.block.ErodedDirtBlock;
+import milkucha.trmt.block.ErodedDirtPathBlock;
 import milkucha.trmt.block.ErodedGrassBlock;
 import milkucha.trmt.erosion.ErosionMapManager;
 import net.minecraft.core.BlockPos;
@@ -63,6 +64,16 @@ public class BoneMealItemMixin {
                 manager.removeEntry(pos);
                 manager.writeCooldownEntry(pos, TRMTBlocks.ERODED_GRASS_BLOCK, currentTime);
             }
+        } else if (block == TRMTBlocks.ERODED_DIRT_PATH) {
+            // Eroded dirt path → revert to most-eroded dirt stage, preserving facing.
+            Direction facing = state.getValue(ErodedDirtPathBlock.FACING);
+            world.setBlock(pos,
+                    TRMTBlocks.ERODED_DIRT.defaultBlockState()
+                            .setValue(ErodedDirtBlock.FACING, facing)
+                            .setValue(ErodedDirtBlock.STAGE, 3),
+                    Block.UPDATE_ALL);
+            manager.removeEntry(pos);
+            manager.writeCooldownEntry(pos, TRMTBlocks.ERODED_DIRT, currentTime);
         } else if (block == TRMTBlocks.ERODED_COARSE_DIRT) {
             Direction facing = state.getValue(ErodedDirtBlock.FACING);
             world.setBlock(pos,
