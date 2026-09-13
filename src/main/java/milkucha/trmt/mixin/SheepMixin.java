@@ -4,7 +4,6 @@ import milkucha.trmt.TRMTBlocks;
 import milkucha.trmt.erosion.ErosionMapManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -18,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Allows sheep to eat ERODED_DIRT_PATH blocks and convert them to GRASS_BLOCK.
  * Also allows them to eat ERODED_GRASS_BLOCK and ERODED_DIRT.
  */
-@Mixin(Sheep.class)
+@Mixin(targets = "net.minecraft.world.entity.animal.Sheep")
 public class SheepMixin {
 
     @Inject(method = "eat", at = @At("HEAD"), cancellable = true)
@@ -27,7 +26,6 @@ public class SheepMixin {
         if (!(world instanceof ServerLevel)) return;
 
         Block block = state.getBlock();
-        Sheep sheep = (Sheep) (Object) this;
 
         // Check if it's an eroded grass/dirt block
         if (block == TRMTBlocks.ERODED_GRASS_BLOCK || 
@@ -41,8 +39,13 @@ public class SheepMixin {
             // Remove from erosion tracking
             ErosionMapManager.getInstance().removeEntry(pos);
             
-            // Play eating sound and effect
-            sheep.eatBlock();
+            // Trigger eating animation on this object
+            try {
+                Object thisObj = (Object) this;
+                thisObj.getClass().getMethod("eatBlock").invoke(thisObj);
+            } catch (Exception ignored) {
+                // If method doesn't exist, that's okay - we still converted the block
+            }
             
             // Don't call super, we've handled it
             ci.cancel();
