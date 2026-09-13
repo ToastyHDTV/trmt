@@ -1,6 +1,7 @@
 package milkucha.trmt;
 
 import milkucha.trmt.block.ErodedDirtBlock;
+import milkucha.trmt.block.ErodedDirtPathBlock;
 import milkucha.trmt.block.ErodedGrassBlock;
 import milkucha.trmt.block.ErodedSandBlock;
 import net.minecraft.core.Registry;
@@ -27,6 +28,13 @@ public final class TRMTBlocks {
             Identifier.fromNamespaceAndPath("trmt", "eroded_coarse_dirt"),
             new ErodedDirtBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.COARSE_DIRT).randomTicks()
                     .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("trmt", "eroded_coarse_dirt"))))
+    );
+
+    public static final Block ERODED_DIRT_PATH = Registry.register(
+            BuiltInRegistries.BLOCK,
+            Identifier.fromNamespaceAndPath("trmt", "eroded_dirt_path"),
+            new ErodedDirtPathBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DIRT_PATH).randomTicks()
+                    .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("trmt", "eroded_dirt_path"))))
     );
 
     public static final Block ERODED_GRASS_BLOCK = Registry.register(
