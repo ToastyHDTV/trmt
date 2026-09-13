@@ -3,7 +3,6 @@ package milkucha.trmt.mixin;
 import milkucha.trmt.TRMTBlocks;
 import milkucha.trmt.erosion.ErosionMapManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -11,25 +10,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Allows sheep to eat ERODED_DIRT_PATH, ERODED_GRASS_BLOCK, and ERODED_DIRT blocks,
- * converting them to GRASS_BLOCK. Works with Minecraft 1.21.1 Fabric API.
+ * Allows sheep to graze on ERODED_DIRT_PATH and other eroded blocks.
+ * Injects into the GrassBlock eating logic to extend it to our custom blocks.
  */
-@Mixin(Sheep.class)
+@Mixin(targets = "net.minecraft.world.level.block.GrassBlock")
 public class SheepMixin {
 
-    @Inject(method = "eatBlock", at = @At("HEAD"), cancellable = true)
-    private void trmt$eatErodedBlocks(CallbackInfo ci) {
-        Sheep sheep = (Sheep) (Object) this;
-        Level world = sheep.level();
-        
+    @Inject(method = "performBonemeal", at = @At("HEAD"), cancellable = true)
+    private void trmt$allowEatingErodedBlocks(Level world, net.minecraft.util.RandomSource random, BlockPos pos, BlockState state, CallbackInfoReturnable<Boolean> cir) {
         if (world.isClientSide()) return;
         
-        BlockPos pos = sheep.blockPosition();
-        BlockState state = world.getBlockState(pos);
-        Block block = state.getBlock();
+        // This is called when a sheep grazes
+        BlockPos belowPos = pos.below();
+        BlockState belowState = world.getBlockState(belowPos);
+        Block block = belowState.getBlock();
 
         // Check if it's one of our eroded blocks
         if (block == TRMTBlocks.ERODED_DIRT_PATH || 
@@ -38,9 +35,9 @@ public class SheepMixin {
             block == TRMTBlocks.ERODED_COARSE_DIRT) {
             
             // Convert to GRASS_BLOCK
-            world.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-            ErosionMapManager.getInstance().removeEntry(pos);
-            ci.cancel();
+            world.setBlock(belowPos, Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            ErosionMapManager.getInstance().removeEntry(belowPos);
+            cir.setReturnValue(true);
         }
     }
 }
